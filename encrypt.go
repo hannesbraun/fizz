@@ -12,6 +12,11 @@ func encrypt() {
 	randomByte := make([]byte, 1)
 	readBytes := make([]byte, 512)
 
+	// Getting the size
+	sourceFileInfo, err := os.Stat(os.Args[2])
+	checkForError(err)
+	totalBytes := sourceFileInfo.Size()
+
 	// Open source file
 	sourceFile, err := os.Open(os.Args[2])
 	checkForError(err)
@@ -40,7 +45,10 @@ func encrypt() {
 	// New buffered writer for key file
 	keyWriter := bufio.NewWriter(keyFile)
 
-	fmt.Printf("               ")
+	// Activate status printing
+	printStatus := true
+	wg.Add(1)
+	go printProcessedBytes(&totalBytesProcessed, totalBytes, &printStatus)
 
 	// Set amount of bytes read to 1 to initially enter the loop
 	amountBytesRead := 1
@@ -63,13 +71,14 @@ func encrypt() {
 			err = destinationWriter.WriteByte(randomByte[0] ^ readBytes[counter])
 			checkForError(err)
 
-			// Print a dot every kilobyte
+			// Count the bytes processed
 			totalBytesProcessed++
-			if totalBytesProcessed%1048576 == 0 {
-				fmt.Printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b%-15d", totalBytesProcessed)
-			}
 		}
 	}
+
+	// Stop updating on console
+	printStatus = false
+	wg.Wait()
 
 	// Flush writers
 	err = keyWriter.Flush()

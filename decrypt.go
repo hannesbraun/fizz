@@ -11,6 +11,11 @@ func decrypt() {
 	randomByte := make([]byte, 1)
 	readBytes := make([]byte, 512)
 
+	// Getting the size
+	sourceFileInfo, err := os.Stat(os.Args[2])
+	checkForError(err)
+	totalBytes := sourceFileInfo.Size()
+
 	// Open source file
 	sourceFile, err := os.Open(os.Args[2])
 	checkForError(err)
@@ -37,6 +42,11 @@ func decrypt() {
 	// New buffered reader for key file
 	keyReader := bufio.NewReader(keyFile)
 
+	// Activate status printing
+	printStatus := true
+	wg.Add(1)
+	go printProcessedBytes(&totalBytesProcessed, totalBytes, &printStatus)
+
 	// Set amount of bytes read to 1 to initially enter the loop
 	amountBytesRead := 1
 	for amountBytesRead > 0 {
@@ -54,13 +64,14 @@ func decrypt() {
 			err = destinationWriter.WriteByte(randomByte[0] ^ readBytes[counter])
 			checkForError(err)
 
-			// Print a dot every kilobyte
+			// Count the bytes processed
 			totalBytesProcessed++
-			if totalBytesProcessed%1048576 == 0 {
-				fmt.Printf(".")
-			}
 		}
 	}
+
+	// Stop updating on console
+	printStatus = false
+	wg.Wait()
 
 	// Flush writer
 	err = destinationWriter.Flush()
