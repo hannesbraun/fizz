@@ -1,7 +1,7 @@
 all: fizz
 
 fizz: main.go key.go xor.go
-	go build -o fizz main.go key.go xor.go
+	go build -v -o fizz main.go key.go xor.go
 
 clean:
 	rm fizz
