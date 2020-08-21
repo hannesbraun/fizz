@@ -3,22 +3,29 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 func main() {
-	// File needs to be specified
-	if len(os.Args) > 2 {
-		if os.Args[1] == "encrypt" {
-			encrypt()
-		} else if os.Args[1] == "decrypt" {
-			if len(os.Args) > 3 {
-				decrypt()
-			} else {
-				fmt.Println("Please specify the encrypted file and the key")
-			}
-		}
-	} else {
-		fmt.Println("Plese specify the mode and the file(s)")
+	if len(os.Args) != 4 {
+		fmt.Println("Wrong number of arguments")
+		fmt.Println("Generate a key with:", os.Args[0], "key <keylen> key.fizzkey")
+		fmt.Println("XOR with:", os.Args[0], "xor file key.fizzkey")
+		os.Exit(1)
 	}
 
+	var retVal int
+
+	if strings.ToLower(os.Args[1]) == "xor" {
+		retVal = xor()
+	} else if strings.ToLower(os.Args[1]) == "key" {
+		retVal = key()
+	} else {
+		fmt.Println("Unknown mode:", os.Args[1])
+		os.Exit(1)
+	}
+
+	if retVal != 0 {
+		os.Exit(1)
+	}
 }

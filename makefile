@@ -1,7 +1,7 @@
 all: fizz
 
-fizz: main.go encrypt.go decrypt.go tools.go
-	go build -o fizz main.go encrypt.go decrypt.go tools.go
+fizz: main.go key.go xor.go
+	go build -o fizz main.go key.go xor.go
 
 clean:
 	rm fizz
